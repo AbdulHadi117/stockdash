@@ -6,3 +6,7 @@ psycopg2-binary>=2.9
 alembic>=1.13
 yfinance>=0.2.50
 pandas>=2.2
+PyJWT>=2.8
+bcrypt>=4.1
+slowapi>=0.1.9
+email-validator>=2.1
