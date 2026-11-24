@@ -1,16 +1,66 @@
-import os
-
-import requests
+import extra_streamlit_components as stx
 import streamlit as st
 
-BACKEND_URL = os.getenv("BACKEND_URL", "http://backend:8000")
+import auth
 
 st.set_page_config(page_title="StockDash", layout="wide")
-st.title("StockDash")
 
-try:
-    r = requests.get(f"{BACKEND_URL}/health", timeout=5)
-    r.raise_for_status()
-    st.success(f"Backend: {r.json()}")
-except requests.RequestException as e:
-    st.error(f"Backend unreachable: {e}")
+cm = stx.CookieManager(key="cookie_manager")
+auth.try_restore(cm)
+
+if st.session_state.get("access_token") and st.sidebar.button("Log out"):
+    auth.logout()
+
+
+def render_login() -> None:
+    st.title("StockDash")
+    tab_login, tab_register = st.tabs(["Log in", "Register"])
+    with tab_login:
+        with st.form("login_form"):
+            email = st.text_input("Email")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Log in")
+        if submitted:
+            err = auth.login(email, password)
+            if err:
+                st.error(err)
+    with tab_register:
+        with st.form("register_form"):
+            r_email = st.text_input("Email", key="reg_email")
+            r_password = st.text_input("Password", type="password", key="reg_pw")
+            r_submitted = st.form_submit_button("Create account")
+        if r_submitted:
+            err = auth.register(r_email, r_password)
+            if err:
+                st.error(err)
+            else:
+                st.success("Account created. Log in from the first tab.")
+
+
+gate = st.empty()
+if not st.session_state.get("access_token"):
+    with gate.container():
+        render_login()
+    if st.session_state.get("access_token"):
+        gate.empty()
+
+auth.flush_cookie(cm)
+
+if not st.session_state.get("access_token"):
+    st.stop()
+
+st.title("StockDash")
+me = auth.api("GET", "/auth/me")
+if me.status_code == 200:
+    st.sidebar.write(me.json()["email"])
+    health = auth.api("GET", "/health")
+    if health.ok:
+        st.success(f"Backend: {health.json()}")
+    else:
+        st.error("Backend error: " + health.text)
+elif not st.session_state.get("access_token"):
+    st.rerun()
+else:
+    st.error("Could not load session")
+
+auth.flush_cookie(cm)
