@@ -116,10 +116,12 @@ def logout() -> None:
 def api(method: str, path: str, **kwargs) -> requests.Response:
     """Authenticated call; refreshes once on 401."""
 
+    timeout = kwargs.pop("timeout", TIMEOUT)
+
     def call() -> requests.Response:
         headers = {"Authorization": f"Bearer {st.session_state.get('access_token', '')}"}
         return requests.request(
-            method, f"{BACKEND_URL}{path}", headers=headers, timeout=TIMEOUT, **kwargs
+            method, f"{BACKEND_URL}{path}", headers=headers, timeout=timeout, **kwargs
         )
 
     r = call()
