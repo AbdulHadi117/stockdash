@@ -27,7 +27,7 @@ async def security_headers(request: Request, call_next):
 
 app.include_router(auth.router)
 app.include_router(market.router)
-
+app.include_router(market.market_router)
 
 @app.get("/health")
 def health(db: Session = Depends(get_db)):
