@@ -2,6 +2,7 @@ import extra_streamlit_components as stx
 import streamlit as st
 
 import auth
+from market_page import render_market
 
 st.set_page_config(page_title="StockDash", layout="wide")
 
@@ -55,12 +56,20 @@ if me.status_code == 200:
     st.sidebar.write(me.json()["email"])
     health = auth.api("GET", "/health")
     if health.ok:
-        st.success(f"Backend: {health.json()}")
+        st.sidebar.success(f"Backend: {health.json()}")
     else:
-        st.error("Backend error: " + health.text)
+        st.sidebar.error("Backend error: " + health.text)
 elif not st.session_state.get("access_token"):
     st.rerun()
 else:
     st.error("Could not load session")
 
 auth.flush_cookie(cm)
+
+tab_market, tab_forecast, tab_watch = st.tabs(["Market", "Forecast", "Watchlist / Alerts"])
+with tab_market:
+    render_market()
+with tab_forecast:
+    st.info("Forecast: M5")
+with tab_watch:
+    st.info("Watchlist / Alerts: M6")
