@@ -3,6 +3,7 @@ import streamlit as st
 
 import auth
 from market_page import render_market
+from forecast_page import render_forecast
 
 st.set_page_config(page_title="StockDash", layout="wide")
 
@@ -70,6 +71,6 @@ tab_market, tab_forecast, tab_watch = st.tabs(["Market", "Forecast", "Watchlist 
 with tab_market:
     render_market()
 with tab_forecast:
-    st.info("Forecast: M5")
+    render_forecast()
 with tab_watch:
     st.info("Watchlist / Alerts: M6")
